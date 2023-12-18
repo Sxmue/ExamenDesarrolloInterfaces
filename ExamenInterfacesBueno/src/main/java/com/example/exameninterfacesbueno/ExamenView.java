@@ -1,6 +1,5 @@
 package com.example.exameninterfacesbueno;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -11,7 +10,7 @@ import javafx.util.StringConverter;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Date;
+
 
 public class ExamenView
 {
@@ -61,6 +60,8 @@ public class ExamenView
     Cliente cliente3;
     @javafx.fxml.FXML
     private ToggleGroup toggleTarifa;
+    @javafx.fxml.FXML
+    private Hyperlink hyperlink;
 
 
     @javafx.fxml.FXML
@@ -104,6 +105,35 @@ public class ExamenView
 
 
 
+        toggleTarifa.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+
+            if(datePickerSalida.getValue()!=null && datePickerEntrada.getValue()!=null) {
+
+                calcularCoste();
+            }
+        });
+
+        datePickerSalida.valueProperty().addListener((ov, oldValue, newValue) -> {
+            if(datePickerEntrada.getValue()!= null && toggleTarifa.getSelectedToggle()!=null){
+
+                calcularCoste();
+
+            }
+
+
+        });
+
+        datePickerEntrada.valueProperty().addListener((ov, oldValue, newValue) -> {
+            if(datePickerSalida.getValue()!= null && toggleTarifa.getSelectedToggle()!=null){
+
+                calcularCoste();
+
+            }
+
+
+        });
+
+
 
     }
 
@@ -145,28 +175,14 @@ public class ExamenView
                 datePickerEntrada.getValue()!=null &&
                 datePickerSalida.getValue()!=null ){
 
-            Period periodo = Period.between(datePickerEntrada.getValue(),datePickerSalida.getValue());
 
-            int dias = periodo.getDays();
-
-            int coste = 0;
-
-            if(toggleTarifa.getSelectedToggle().toString().equalsIgnoreCase("standard")){
-                coste=dias*8;
-            }else if(toggleTarifa.getSelectedToggle().toString().equalsIgnoreCase("Oferta")){
-                coste=dias*6;
-            }else if(toggleTarifa.getSelectedToggle().toString().equalsIgnoreCase("larga duración")){
-                coste=dias*2;
-            }
-         
-
-            lblCoste.setText(coste+" €");
+            int coste = calcularCoste();
 
 
             Entrada eNueva = new Entrada(txtMatricula.getText(),
                     comboModelo.getSelectionModel().getSelectedItem(),
                     comboCliente.getSelectionModel().getSelectedItem(),
-                    toggleTarifa.getSelectedToggle().toString(),
+                    ((RadioButton) toggleTarifa.getSelectedToggle()).getText(),
                     datePickerEntrada.getValue(),
                     datePickerSalida.getValue(),coste);
 
@@ -177,15 +193,7 @@ public class ExamenView
             tablaEntradas.getItems().addAll(observableEntradas);
 
 
-            comboModelo.setValue(null);
-            comboCliente.setValue(null);
-            toggleTarifa.selectToggle(null);
-            datePickerEntrada.setValue(null);
-            datePickerSalida.setValue(null);
-            txtMatricula.setText("");
-            lblCoste.setText("XXX €");
-
-
+            ponerTodoNulo();
 
 
         }else{
@@ -202,9 +210,49 @@ public class ExamenView
 
     }
 
+    private void ponerTodoNulo() {
+        comboModelo.setValue(null);
+        comboCliente.setValue(null);
+        toggleTarifa.selectToggle(null);
+        datePickerEntrada.setValue(null);
+        datePickerSalida.setValue(null);
+        txtMatricula.setText("");
+        lblCoste.setText("XXX €");
+    }
+
+    private int calcularCoste() {
+        Period periodo = Period.between(datePickerEntrada.getValue(),datePickerSalida.getValue());
+
+        int dias = periodo.getDays();
+
+        int coste = 0;
+
+
+        if(toggleTarifa.getSelectedToggle() == radioStandard){
+            coste=dias*8;
+        }else if(toggleTarifa.getSelectedToggle() == radioOferta){
+            coste=dias*6;
+        }else if(toggleTarifa.getSelectedToggle() == radioLargaDuracion){
+            coste=dias*2;
+        }
+
+
+        lblCoste.setText(coste+" €");
+        return coste;
+    }
+
     @javafx.fxml.FXML
     public void salir(ActionEvent actionEvent) {
 
         System.exit(0);
+    }
+
+    @javafx.fxml.FXML
+    public void mostrarAlerta(ActionEvent actionEvent) {
+
+        var alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("HOLA FRANCISCO");
+        alert.setContentText("SAMUEL LEIVA ALVAREZ 2ºDAM");
+        alert.showAndWait();
     }
 }
